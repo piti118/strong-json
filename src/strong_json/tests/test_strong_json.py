@@ -178,5 +178,41 @@ def test_dict_equal():
     assert f == g
 
 
+def test_to_json():
+    got = strong_json.to_json({'a': 'b', 'c': 'd'}, indent=2)
+    expected = """{
+  "__type__": "dict",
+  "__data__": [
+    {
+      "key": "a",
+      "value": "b"
+    },
+    {
+      "key": "c",
+      "value": "d"
+    }
+  ]
+}"""
+    assert got == expected
+
+
+def test_from_json():
+    raw = """{
+      "__type__": "dict",
+      "__data__": [
+        {
+          "key": "a",
+          "value": "b"
+        },
+        {
+          "key": "c",
+          "value": "d"
+        }
+      ]
+    }"""
+    d = strong_json.from_json(raw)
+    assert d == {'a': 'b', 'c': 'd'}
+
+
 def test_is_subclass():
     assert issubclass(User, ToJsonable)

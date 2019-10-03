@@ -23,11 +23,11 @@ class StrongJson:
         d = self.to_json_dict(obj)
         return json.dumps(d, **kwd)
 
-    def from_json(self, s: str, class_map: ClassMap, **kwd) -> Any:
+    def from_json(self, s: str, class_map: ClassMap = {}, **kwd) -> Any:
         d = json.loads(s, **kwd)
         return self.from_json_dict(d, class_map)
 
-    def from_json_dict(self, d: Dict[str, Any], class_map: ClassMap):
+    def from_json_dict(self, d: Dict[str, Any], class_map: ClassMap = {}):
         """override this for custom type"""
         return self.default_from_json_dict(d, class_map)
 
@@ -140,8 +140,13 @@ strong_json = StrongJson()
 
 class FromJsonable:
     @classmethod
-    def from_json_dict(cls, d: Dict, class_map: Dict[str, Type[Any]], decoder: 'StrongJson'):
+    def from_json_dict(cls, d: Dict, class_map: ClassMap, decoder: 'StrongJson'):
         raise NotImplementedError()
+
+    @classmethod
+    def from_json(cls, s: str, class_map: ClassMap = {}, decoder=strong_json, **kwd):
+        d = json.loads(s, **kwd)
+        return cls.from_json_dict(d, class_map, decoder)
 
 
 class ToJsonable:
