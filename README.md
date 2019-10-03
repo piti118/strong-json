@@ -1,5 +1,8 @@
 # StrongJson
+![PyPI](https://img.shields.io/pypi/v/strong_json)
 [![Build Status](https://travis-ci.com/piti118/strong-json.svg?branch=master)](https://travis-ci.org/piti118/strong-json)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/piti118/strong_json_notebook/master)
+
 
 A more faithful python json encoder/decoder.
 
@@ -95,6 +98,9 @@ In addition to the standard json.dumps/loads, this module offer the following ad
       ```
       
 # Basic Usage
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/piti118/strong_json_notebook/master)
+
+
 
 ## From Object to JSON
 ### Builtin Object
