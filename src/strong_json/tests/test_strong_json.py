@@ -44,7 +44,7 @@ basic_tests = [
     ),
     (555, 555),
     ((1, 2, 3), {'__type__': 'tuple', '__data__': [1, 2, 3]}),
-    (date(2019, 8, 23), {'__type__': 'date', '__data__': {'year': 2019, 'month': 8, 'day': 23}})
+    (date(2019, 8, 23), {'__type__': 'date', 'year': 2019, 'month': 8, 'day': 23})
 ]
 
 custom_class_tests = [

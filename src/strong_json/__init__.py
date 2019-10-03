@@ -130,11 +130,9 @@ class StrongJson:
                 data = d[data_key]
                 return tuple([self.from_json_dict(item) for item in data])
             elif d[type_key] == 'date':
-                data = d[data_key]
-                return date(**data)
+                return date(**{k: v for k, v in d.items() if k != self.type_key})
             elif d[type_key] == 'datetime':
-                data = d[data_key]
-                return datetime(**data)
+                return datetime(**{k: v for k, v in d.items() if k != self.type_key})
             elif d[type_key] == 'set':
                 data = d[data_key]
                 return set(data)
@@ -183,20 +181,20 @@ class StrongJson:
         elif isinstance(v, date):
             return {
                 type_key: 'date',
-                data_key: {'year': v.year, 'month': v.month, 'day': v.day}
+                'year': v.year,
+                'month': v.month,
+                'day': v.day
             }
         elif isinstance(v, datetime):
             return {
                 type_key: 'datetime',
-                data_key: {
-                    'year': v.year,
-                    'month': v.month,
-                    'day': v.day,
-                    'hour': v.hour,
-                    'minute': v.minute,
-                    'second': v.second,
-                    'microsecond': v.microsecond
-                }
+                'year': v.year,
+                'month': v.month,
+                'day': v.day,
+                'hour': v.hour,
+                'minute': v.minute,
+                'second': v.second,
+                'microsecond': v.microsecond
             }
         elif isinstance(v, set):
             return {

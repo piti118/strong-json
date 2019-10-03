@@ -80,16 +80,16 @@ In addition to the standard json.dumps/loads, this module offer the following ad
     ```
     {
         '__type__': 'date', 
-        '__data__':{
-            'year': 2019, 'month': 8, 'day': 23
-        }
+        'year': 2019, 
+        'month': 8, 
+        'day': 23
     }
     ```
 - Support for Enum.
     - ```
       class Color(Enum):
         RED='redd'
-        BLUE='blueee
+        BLUE='blueee'
       strong_json.to_json(Color.RED)
       ``` 
       ->
