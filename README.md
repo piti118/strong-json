@@ -127,7 +127,7 @@ obj = strong_json.from_json(s)
 
 ### Custom Class
 ```python
-from strong_json import strong_json, ToJsonable
+from strong_json import strong_json
 
 class User: # it doesn't have to be ToJsonable
     def __init__(self, first, last):
