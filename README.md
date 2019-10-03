@@ -16,12 +16,12 @@ pip install git+git://github.com/piti118/strong-json.git
 ## Features
 In addition to the standard json.dumps/loads, this module offer the following additonal behavior.
 
-- Simple way interface to allow class to dump to json.
+- Simple interface to allow class to dump to json.
     - ```
-        class User(ToJsonable):
-            def __init__(first, last):
-                self.first = first
-                self.last = last
+      class User(ToJsonable):
+          def __init__(first, last):
+              self.first = first
+              self.last = last
       ```
 - Preserve type information.
     - ```User('f', 'l')``` -> ```{'__type__': 'User', 'first':'f', 'last':'l'}```
@@ -63,9 +63,9 @@ In addition to the standard json.dumps/loads, this module offer the following ad
     
 - Custom class decoder whitelist via class_map
     - ```
-        s = {'__type__': 'User', 'first':'f', 'last':'l'}
-        class_map = {'User', User}
-        strong_json.from_json(s, class_map)
+      s = {'__type__': 'User', 'first':'f', 'last':'l'}
+      class_map = {'User', User}
+      strong_json.from_json(s, class_map)
       ```
     - By default, strong json pass all the argument by name to the constructor.
     - You could also override ```StrongJson``` or implement interface ```FromJsonable``` for custom decoder.
