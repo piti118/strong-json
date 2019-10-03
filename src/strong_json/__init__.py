@@ -12,17 +12,20 @@ JSONPrimitive = Union[Dict[str, 'JSONPrimitive'], List['JSONPrimitive'], int, fl
 
 class StrongJson:
     def __init__(self,
+                 class_map: ClassMap,
                  type_key: str = '__type__',
                  data_key: str = '__data__',
                  treat_dict_as_ordered_dict: bool = True):
         """
 
         Args:
+            class_map (ClassMap): Dictionary from string to Class
             type_key (str): Optional Default '__type__'.
             data_key (str): Optional Default '__data__'.
             treat_dict_as_ordered_dict (bool): Optional Default True.
                 treat all dictionary as ordered dict(python 3.7)
         """
+        self.class_map = class_map
         self.type_key = type_key
         self.data_key = data_key
         self.treat_dict_as_ordered_dict = treat_dict_as_ordered_dict
@@ -41,33 +44,31 @@ class StrongJson:
         d = self.to_json_dict(obj)
         return json.dumps(d, **kwd)
 
-    def from_json(self, s: str, class_map: ClassMap = {}, **kwd) -> Any:
+    def from_json(self, s: str, **kwd) -> Any:
         """ Construct object from json string.
 
         Args:
             s (str): json string
-            class_map (ClassMap): dictionary from type name to class for object construction
             **kwd (): The rest of keyword arguments will be passed down to json.loads
 
         Returns:
             Any. Object constructed from json string.
         """
         d = json.loads(s, **kwd)
-        return self.from_json_dict(d, class_map)
+        return self.from_json_dict(d)
 
-    def from_json_dict(self, d: JSONPrimitive, class_map: ClassMap = {}) -> Any:
+    def from_json_dict(self, d: JSONPrimitive) -> Any:
         """Construct object from json dictionary.
         This is the place to override if you want to add custom class.
 
         Args:
             d (JSONPrimitive): JSONPrimitive. Ex: dict.
-            class_map (ClassMap):dictionary from type name to class for objectconstruction
 
         Returns:
             Any
         """
 
-        return self.default_from_json_dict(d, class_map)
+        return self.default_from_json_dict(d)
 
     def to_json_dict(self, v: Any) -> JSONPrimitive:
         """Create json dumps friendly object
@@ -81,12 +82,11 @@ class StrongJson:
         """
         return self.default_to_json_dict(v)
 
-    def default_from_json_dict(self, d: JSONPrimitive, class_map: ClassMap) -> Any:
+    def default_from_json_dict(self, d: JSONPrimitive) -> Any:
         """Default from json dict. Useful for fallback when override the class.
 
         Args:
             d (JSONPrimitive): JSONPrimitive. Ex: dict.
-            class_map (ClassMap):dictionary from type name to class for object construction.
 
         Returns:
             Any. Constructed Object.
@@ -98,11 +98,11 @@ class StrongJson:
         if isinstance(d, dict):
             if type_key not in d:
                 # assume string key dict
-                return {k: self.from_json_dict(v, class_map) for k, v in d.items()}
-            elif d[type_key] in class_map:
-                obj_class = class_map[d[type_key]]
+                return {k: self.from_json_dict(v) for k, v in d.items()}
+            elif d[type_key] in self.class_map:
+                obj_class = self.class_map[d[type_key]]
                 if issubclass(obj_class, FromJsonable):
-                    return obj_class.from_json_dict(d, class_map, self)
+                    return obj_class.from_json_dict(d, decoder=self)
                 elif issubclass(obj_class, Enum):
                     data = d[data_key]
                     return obj_class[data]  # trust me not pycharm
@@ -111,15 +111,15 @@ class StrongJson:
                     bad_keys = [p for p in param if p not in d]
                     if bad_keys:
                         warnings.warn('Param not found : %r' % (bad_keys,))
-                    tmp = {k: self.from_json_dict(v, class_map) for k, v in d.items() if k != type_key and k in param}
+                    tmp = {k: self.from_json_dict(v) for k, v in d.items() if k != type_key and k in param}
                     return obj_class(**tmp)
             elif d[type_key] == 'dict':  # dict with non str key
                 data = d[data_key]
-                return {self.from_json_dict(item['key'], class_map): self.from_json_dict(item['value'], class_map) for
+                return {self.from_json_dict(item['key']): self.from_json_dict(item['value']) for
                         item in data}
             elif d[type_key] == 'tuple':
                 data = d[data_key]
-                return tuple([self.from_json_dict(item, class_map) for item in data])
+                return tuple([self.from_json_dict(item) for item in data])
             elif d[type_key] == 'date':
                 data = d[data_key]
                 return date(**data)
@@ -129,7 +129,7 @@ class StrongJson:
             else:
                 raise ValueError('Type not found for key %s' % d[type_key])
         elif isinstance(d, list):
-            return [self.from_json_dict(item, class_map) for item in d]
+            return [self.from_json_dict(item) for item in d]
         elif isinstance(d, (int, str, float)):
             return d
         elif d is None:
@@ -195,7 +195,7 @@ class StrongJson:
 """
 Default encoder/decoder
 """
-strong_json = StrongJson()
+strong_json = StrongJson(class_map={})
 
 
 class FromJsonable:
@@ -204,12 +204,11 @@ class FromJsonable:
     """
 
     @classmethod
-    def from_json_dict(cls, d: Dict[str, JSONPrimitive], class_map: ClassMap, decoder: StrongJson):
+    def from_json_dict(cls, d: Dict[str, JSONPrimitive], decoder: StrongJson):
         """
         Construct object from dict
         Args:
             d (Dict[str, JSONPrimitive]): json dict
-            class_map (ClassMap): class map
             decoder (StrongJson): decoder
 
         Returns:
@@ -218,12 +217,11 @@ class FromJsonable:
         raise NotImplementedError()
 
     @classmethod
-    def from_json(cls, s: str, class_map: ClassMap = {}, decoder: StrongJson = strong_json, **kwd):
+    def from_json(cls, s: str, decoder: StrongJson = strong_json, **kwd):
         """Construct object from json string
 
         Args:
             s (str): json str
-            class_map (ClassMap): class map
             decoder (StrongJson):
             **kwd (): the rest of keyword arguments are passed down to json.loads
 
@@ -232,7 +230,7 @@ class FromJsonable:
 
         """
         d = json.loads(s, **kwd)
-        return cls.from_json_dict(d, class_map, decoder)
+        return cls.from_json_dict(d, decoder)
 
 
 class ToJsonable:

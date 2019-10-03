@@ -19,7 +19,7 @@ In addition to the standard json.dumps/loads, this module offer the following ad
 - Simple interface to allow class to dump to json.
     - ```
       class User(ToJsonable):
-          def __init__(first, last):
+          def __init__(self, first, last):
               self.first = first
               self.last = last
       ```
@@ -62,10 +62,12 @@ In addition to the standard json.dumps/loads, this module offer the following ad
     - ```(1,2,3)``` -> ```{'__type__':'tuple', '__data__':[1,2,3]}```
     
 - Custom class decoder whitelist via class_map
-    - ```
+    - ```python
+      from strong_json import StrongJson
       s = {'__type__': 'User', 'first':'f', 'last':'l'}
       class_map = {'User', User}
-      strong_json.from_json(s, class_map)
+      custom_json = StrongJson(class_map=class_map)
+      custom_json.from_json(s)
       ```
     - By default, strong json pass all the argument by name to the constructor.
     - You could also override ```StrongJson``` or implement interface ```FromJsonable``` for custom decoder.
@@ -127,7 +129,7 @@ obj = strong_json.from_json(s)
 
 ### Custom Class
 ```python
-from strong_json import strong_json
+from strong_json import StrongJson
 
 class User: # it doesn't have to be ToJsonable
     def __init__(self, first, last):
@@ -142,6 +144,7 @@ s = """
 }
 """
 class_map = {'User': User}
-obj = strong_json.to_json(s, class_map)
+custom_json = StrongJson(class_map=class_map)
+obj = custom_json.to_json(s, class_map)
 ```
 

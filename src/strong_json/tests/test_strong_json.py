@@ -1,7 +1,7 @@
 import math
 
 import pytest
-from strong_json import strong_json, ToJsonable, ClassMapBuilder
+from strong_json import strong_json, ToJsonable, ClassMapBuilder, StrongJson
 from datetime import date
 from enum import Enum, IntEnum
 
@@ -160,7 +160,8 @@ def test_from_json_dict(test_input, expected):
     class_map = ClassMapBuilder.build_class_map([
         Color, Food, User
     ])
-    got = strong_json.from_json_dict(test_input, class_map)
+    custom_json = StrongJson(class_map=class_map)
+    got = custom_json.from_json_dict(test_input)
     assert got == expected
 
 
