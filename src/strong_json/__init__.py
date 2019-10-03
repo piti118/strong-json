@@ -10,6 +10,15 @@ ClassMap = Dict[str, Type[Any]]
 JSONPrimitive = Union[Dict[str, 'JSONPrimitive'], List['JSONPrimitive'], int, float, None, str]
 
 
+class ClassMapLookUpFailWarning(Warning):
+    pass
+    pass
+
+
+class ClassMapLookUpFailError(Exception):
+    pass
+
+
 class StrongJson:
     def __init__(self,
                  class_map: ClassMap,
@@ -126,8 +135,11 @@ class StrongJson:
             elif d[type_key] == 'datetime':
                 data = d[data_key]
                 return datetime(**data)
+            elif d[type_key] == 'set':
+                data = d[data_key]
+                return set(data)
             else:
-                raise ValueError('Type not found for key %s' % d[type_key])
+                raise ClassMapLookUpFailError('Type not found for key %s' % d[type_key])
         elif isinstance(d, list):
             return [self.from_json_dict(item) for item in d]
         elif isinstance(d, (int, str, float)):
@@ -185,6 +197,11 @@ class StrongJson:
                     'second': v.second,
                     'microsecond': v.microsecond
                 }
+            }
+        elif isinstance(v, set):
+            return {
+                type_key: 'set',
+                data_key: [self.to_json_dict(x) for x in v]
             }
         elif isinstance(v, list):
             return [self.to_json_dict(vv) for vv in v]
@@ -245,6 +262,11 @@ class ToJsonable:
             Dict[str, JSONPrimitive]
 
         """
+        cls_name = self.__class__.__qualname__
+        if cls_name not in encoder.class_map:
+            warnings.warn(
+                f"{cls_name} not found in class map. You will not be able to convert this back.",
+                ClassMapLookUpFailWarning)
         tmp = {'__type__': self.__class__.__qualname__}
         for k, v in self.__dict__.items():
             if k not in {'__objclass__', }:
