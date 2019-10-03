@@ -2,7 +2,7 @@ import math
 
 import pytest
 from strong_json import strong_json, ToJsonable, ClassMapBuilder
-from datetime import date, datetime
+from datetime import date
 from enum import Enum, IntEnum
 
 
