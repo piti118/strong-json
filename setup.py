@@ -122,8 +122,10 @@ setup(
     #   py_modules=["my_module"],
     #
     # packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
+    package_dir={'': 'src'},
     packages=find_packages('src'),
     py_modules=['strong_json'],
+
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
     # and refuse to install the project if the version does not match. If you
@@ -148,7 +150,7 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
     extras_require={  # Optional
-        'dev': [''],
+        'dev': ['pytest'],
         'test': ['pytest'],
     },
 
