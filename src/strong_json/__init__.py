@@ -6,12 +6,21 @@ from typing import List, Any, Type, Dict, Union
 import inspect
 from datetime import date, datetime
 
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
 ClassMap = Dict[str, Type[Any]]
 JSONPrimitive = Union[Dict[str, 'JSONPrimitive'], List['JSONPrimitive'], int, float, None, str]
 
 
 class ClassMapLookUpFailWarning(Warning):
-    pass
     pass
 
 
@@ -20,6 +29,7 @@ class ClassMapLookUpFailError(Exception):
 
 
 class StrongJson:
+    # TODO: Make this more modular
     def __init__(self,
                  class_map: ClassMap,
                  type_key: str = '__type__',
@@ -31,8 +41,8 @@ class StrongJson:
             class_map (ClassMap): Dictionary from string to Class
             type_key (str): Optional Default '__type__'.
             data_key (str): Optional Default '__data__'.
-            treat_dict_as_ordered_dict (bool): Optional Default True.
-                treat all dictionary as ordered dict(python 3.7)
+            treat_dict_as_ordered_dict (bool): Optional. Default True.
+                treat all dictionary as ordered dict(python 3.6)
         """
         self.class_map = class_map
         self.type_key = type_key
@@ -158,6 +168,19 @@ class StrongJson:
             elif d[type_key] == 'set':
                 data = d[data_key]
                 return set(data)
+            elif d[type_key] == 'pandas.DataFrame':
+                if pd is None:
+                    warnings.warn('Found Pandas DataFrame but pandas is not installed')
+                    return None
+                else:
+                    data = self.from_json_dict(d[data_key])
+                    return pd.DataFrame(data)
+            elif d[type_key] == 'numpy.ndarray':
+                if np is None:
+                    warnings.warn('Found Numpy ndarray but numpy is not installed')
+                    return None
+                else:
+                    return np.array(self.from_json_dict(d[data_key]))
             else:
                 raise ClassMapLookUpFailError('Type not found for key %s' % d[type_key])
         elif isinstance(d, list):
@@ -227,6 +250,16 @@ class StrongJson:
             return [self.to_json_dict(vv) for vv in v]
         elif isinstance(v, (int, float, str)) or v is None:
             return v
+        elif np is not None and isinstance(v, np.ndarray):
+            return {
+                type_key: 'numpy.ndarray',
+                data_key: self.to_json_dict(v.tolist())
+            }
+        elif pd is not None and isinstance(v, pd.DataFrame):
+            return {
+                type_key: 'pandas.DataFrame',
+                data_key: self.to_json_dict(v.to_dict())
+            }
         else:
             return self.simple_object_dump(v)
 

@@ -4,6 +4,8 @@ import pytest
 from strong_json import strong_json, ToJsonable, ClassMapBuilder, StrongJson
 from datetime import date
 from enum import Enum, IntEnum
+import numpy as np
+import pandas as pd
 
 
 class User(ToJsonable):
@@ -50,11 +52,12 @@ basic_tests = [
     (555, 555),
     ((1, 2, 3), {'__type__': 'tuple', '__data__': [1, 2, 3]}),
     (date(2019, 8, 23), {'__type__': 'date', 'year': 2019, 'month': 8, 'day': 23}),
+    (np.array([1, 2, 3]), {'__type__': 'numpy.ndarray', '__data__': [1, 2, 3]}),
 ]
 
 custom_class_tests = [
     (User('f', 'l'), {'__type__': 'User', 'first_name': 'f', 'last_name': 'l'}),
-    (SimpleClass('hello'), {'__type__': 'SimpleClass', 'msg': 'hello'})
+    (SimpleClass('hello'), {'__type__': 'SimpleClass', 'msg': 'hello'}),
 ]
 
 non_standard_dict_tests = [
@@ -169,6 +172,35 @@ def test_from_json_dict(test_input, expected):
     custom_json = StrongJson(class_map=class_map)
     got = custom_json.from_json_dict(test_input)
     assert got == expected
+
+
+def test_pandas_decode():
+    s = {'__type__': 'pandas.DataFrame', '__data__': {'__type__': 'dict', '__data__': [
+        {'key': 'a', 'value': {'__type__': 'dict', '__data__': [{'key': 0, 'value': 1}, {'key': 1, 'value': 2}]}},
+        {'key': 'b', 'value': {'__type__': 'dict', '__data__': [{'key': 0, 'value': 3}, {'key': 1, 'value': 4}]}}]}}
+    got = strong_json.from_json_dict(s)
+
+    expected = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
+    assert got.equals(expected)
+
+
+def test_pandas_encode():
+    s = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})
+    got = strong_json.to_json_dict(s)
+
+    expected = {'__type__': 'pandas.DataFrame', '__data__': {'__type__': 'dict', '__data__': [
+        {'key': 'a', 'value': {'__type__': 'dict', '__data__': [{'key': 0, 'value': 1}, {'key': 1, 'value': 2}]}},
+        {'key': 'b', 'value': {'__type__': 'dict', '__data__': [{'key': 0, 'value': 3}, {'key': 1, 'value': 4}]}}]}}
+
+    assert got == expected
+
+
+def test_numpy_decode():
+    from numpy.testing import assert_array_equal
+    s = {'__type__': 'numpy.ndarray', '__data__': [1, 2, 3]}
+    got = strong_json.from_json_dict(s)
+    expected = np.array([1, 2, 3])
+    assert_array_equal(got, expected)
 
 
 def test_dict_equal():
