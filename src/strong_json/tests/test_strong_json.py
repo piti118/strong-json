@@ -22,7 +22,7 @@ class User(ToJsonable):
         return self.first_name == other.first_name and self.last_name == other.last_name
 
     def __str__(self) -> str:
-        return f"{self.first_name}_{self.last_name}"
+        return f"{self.first_name}_{self.last_name}"  # pragma: no cover
 
 
 class SimpleClass:
@@ -291,8 +291,8 @@ def test_is_subclass():
 def test_missing_param():
     class BadUser(ToJsonable):
         def __init__(self, first: str, last: str):
-            self.first = first
-            self.last = last
+            self.first = first  # pragma: no cover
+            self.last = last  # pragma: no cover
 
     with pytest.raises(MissingParameterError):
         jsoner = StrongJson({'BadUser': BadUser})
