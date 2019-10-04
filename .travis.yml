@@ -8,7 +8,7 @@ install:
   - pip install codecov
 
 script:
-  - pytest --cov-report=xml --cov=strong_json
+  - pytest --cov-report=xml --cov=src/strong_json
 
 after_success:
   - codecov
