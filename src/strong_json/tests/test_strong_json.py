@@ -21,6 +21,11 @@ class User(ToJsonable):
         return f"{self.first_name}_{self.last_name}"
 
 
+class SimpleClass:
+    def __init__(self, msg: str):
+        self.msg = msg
+
+
 class Color(Enum):
     RED = 'reddd'
     Blue = 'blue'
@@ -44,11 +49,12 @@ basic_tests = [
     ),
     (555, 555),
     ((1, 2, 3), {'__type__': 'tuple', '__data__': [1, 2, 3]}),
-    (date(2019, 8, 23), {'__type__': 'date', 'year': 2019, 'month': 8, 'day': 23})
+    (date(2019, 8, 23), {'__type__': 'date', 'year': 2019, 'month': 8, 'day': 23}),
 ]
 
 custom_class_tests = [
-    (User('f', 'l'), {'__type__': 'User', 'first_name': 'f', 'last_name': 'l'})
+    (User('f', 'l'), {'__type__': 'User', 'first_name': 'f', 'last_name': 'l'}),
+    (SimpleClass('hello'), {'__type__': 'SimpleClass', 'msg': 'hello'})
 ]
 
 non_standard_dict_tests = [

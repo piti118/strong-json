@@ -113,6 +113,29 @@ s = strong_json.to_json(obj)
 s_indent = strong_json.to_json(obj, indent=2)
 ```
 ### Custom Class
+#### SimpleClass
+Custom class works out of the box 
+```python
+from strong_json import strong_json
+
+class SimpleClass:
+    def __init__(self, msg):
+        self.msg = msg
+
+obj = SimpleClass('hello')
+s = strong_json.to_json(object)
+```
+which produce json of the form
+```json
+{
+  "__type__": "SimpleClass",
+  "msg": "hello"
+}
+```
+
+
+#### Custom Encoder.
+If you don't like the default class encoder you can create new one by implementing ```ToJsonable``` interface.
 ```python
 from strong_json import strong_json, ToJsonable
 
@@ -120,9 +143,27 @@ class User(ToJsonable):
     def __init__(self, first, last):
         self.first = first
         self.last = last
+        
+    # this is where the magic happens.
+    def to_json_dict(self, encoder: StrongJson) -> Dict[str, JSONPrimitive]:
+        return {
+            '__type__': 'User',
+            'first': encoder.to_json_dict(self.first),
+            'last': encoder.to_json_dict(self.last),
+            'full_name': encoder.to_json_dict(f"{self.first} {self.last}")
+        }
 
-obj = {'a': User('a', 'aa'), 'b':User('b', 'bb')}
+obj = User('hello', 'world')
 s = strong_json.to_json(object)
+```
+which produces json of the form
+```json
+{
+  "__type__": "User",
+  "first": "hello",
+  "last": "world",
+  "full_name": "hello_world"
+}
 ```
 
 ## From JSON to object
@@ -153,4 +194,3 @@ class_map = {'User': User}
 custom_json = StrongJson(class_map=class_map)
 obj = custom_json.to_json(s, class_map)
 ```
-

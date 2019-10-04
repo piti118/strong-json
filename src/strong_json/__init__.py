@@ -91,6 +91,28 @@ class StrongJson:
         """
         return self.default_to_json_dict(v)
 
+    def simple_object_dump(self, v: Any) -> Dict[str, JSONPrimitive]:
+        """Dump object as simple dict
+
+        {"__type__": ClassName, "field1":x, "field2": y}
+
+        Args:
+            v (Any): object to dump
+
+        Returns:
+            Dict[str, JSONPrimitive]
+        """
+        cls_name = v.__class__.__qualname__
+        if cls_name not in self.class_map:
+            warnings.warn(
+                f"{cls_name} not found in class map. You will not be able to convert this back.",
+                ClassMapLookUpFailWarning)
+        tmp = {'__type__': cls_name}
+        for k, v in v.__dict__.items():
+            if k not in {'__objclass__', }:
+                tmp[k] = self.to_json_dict(v)
+        return tmp
+
     def default_from_json_dict(self, d: JSONPrimitive) -> Any:
         """Default from json dict. Useful for fallback when override the class.
 
@@ -203,8 +225,10 @@ class StrongJson:
             }
         elif isinstance(v, list):
             return [self.to_json_dict(vv) for vv in v]
-        else:
+        elif isinstance(v, (int, float, str)) or v is None:
             return v
+        else:
+            return self.simple_object_dump(v)
 
 
 """
@@ -260,16 +284,17 @@ class ToJsonable:
             Dict[str, JSONPrimitive]
 
         """
-        cls_name = self.__class__.__qualname__
-        if cls_name not in encoder.class_map:
-            warnings.warn(
-                f"{cls_name} not found in class map. You will not be able to convert this back.",
-                ClassMapLookUpFailWarning)
-        tmp = {'__type__': self.__class__.__qualname__}
-        for k, v in self.__dict__.items():
-            if k not in {'__objclass__', }:
-                tmp[k] = encoder.to_json_dict(v)
-        return tmp
+        return encoder.simple_object_dump(self)
+        # cls_name = self.__class__.__qualname__
+        # if cls_name not in encoder.class_map:
+        #     warnings.warn(
+        #         f"{cls_name} not found in class map. You will not be able to convert this back.",
+        #         ClassMapLookUpFailWarning)
+        # tmp = {'__type__': self.__class__.__qualname__}
+        # for k, v in self.__dict__.items():
+        #     if k not in {'__objclass__', }:
+        #         tmp[k] = encoder.to_json_dict(v)
+        # return tmp
 
     def to_json(self, encoder: StrongJson = strong_json, **kwd) -> str:
         """Convert this object to json string.
