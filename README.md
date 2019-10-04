@@ -17,7 +17,7 @@ pip install git+git://github.com/piti118/strong-json.git
 ```
 
 ## Features
-In addition to the standard json.dumps/loads, this module offer the following additonal behavior.
+In addition to the standard json.dumps/loads, this module offer the following additional behavior.
 
 - Custom class support outside the box(overridable via ToJsonable interface).
     - ```python
