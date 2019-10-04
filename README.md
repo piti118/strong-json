@@ -172,7 +172,7 @@ which produces json of the form
 ### Builtin Object
 ```python
 from strong_json import strong_json
-s = """{'a': 'b', 'c':'d'}"""
+s = """{"a": "b", "c":"d"}"""
 obj = strong_json.from_json(s)
 ````
 
