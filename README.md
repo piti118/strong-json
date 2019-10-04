@@ -113,6 +113,7 @@ s = strong_json.to_json(obj)
 s_indent = strong_json.to_json(obj, indent=2)
 ```
 ### Custom Class
+
 #### SimpleClass
 Custom class works out of the box 
 ```python
@@ -132,7 +133,6 @@ which produce json of the form
   "msg": "hello"
 }
 ```
-
 
 #### Custom Encoder.
 If you don't like the default class encoder you can create new one by implementing ```ToJsonable``` interface.
@@ -167,6 +167,7 @@ which produces json of the form
 ```
 
 ## From JSON to object
+
 ### Builtin Object
 ```python
 from strong_json import strong_json
