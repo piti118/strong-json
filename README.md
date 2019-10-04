@@ -35,10 +35,10 @@ In addition to the standard json.dumps/loads, this module offer the following ad
         - ```{'a':'b', 'c':'d'}``` ->
             ```json
             {
-                '__type__':'dict'
-                '__data__':[
-                    {'key': 'a', 'value': 'b'},
-                    {'key': 'c', 'value': 'd'},
+                "__type__": "dict",
+                "__data__": [
+                    {"key": "a", "value": "b"},
+                    {"key": "c", "value": "d"}
                 ]
             }
             ```
@@ -95,7 +95,7 @@ In addition to the standard json.dumps/loads, this module offer the following ad
       ``` 
       ->
       ```json
-      {'__type__': 'Color' '__data__':'RED'}
+      {"__type__": "Color", "__data__":"RED"}
       ```
       
 # Basic Usage
