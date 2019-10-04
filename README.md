@@ -187,9 +187,9 @@ class User: # it doesn't have to be ToJsonable
 
 s = """
 {
-    '__type__': 'User',
-    'first': 'hello',
-    'last': 'world'
+    "__type__": "User",
+    "first": "hello",
+    "last": "world"
 }
 """
 class_map = {'User': User}
