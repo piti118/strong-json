@@ -77,12 +77,12 @@ In addition to the standard json.dumps/loads, this module offer the following ad
     - You could also use strong_json.ClassMapBuilder to save some typing.
 - Support for date and datetime.
     - ```datetime.date(2019,8,23)``` -> 
-    ```
+    ```json
     {
-        '__type__': 'date', 
-        'year': 2019, 
-        'month': 8, 
-        'day': 23
+        "__type__": "date", 
+        "year": 2019, 
+        "month": 8, 
+        "day": 23
     }
     ```
 - Support for Enum.
