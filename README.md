@@ -19,9 +19,9 @@ pip install git+git://github.com/piti118/strong-json.git
 ## Features
 In addition to the standard json.dumps/loads, this module offer the following additonal behavior.
 
-- Simple interface to allow class to dump to json.
+- Custom class support outside the box(overridable via ToJsonable interface).
     - ```
-      class User(ToJsonable):
+      class User:
           def __init__(self, first, last):
               self.first = first
               self.last = last
