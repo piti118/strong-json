@@ -20,7 +20,7 @@ pip install git+git://github.com/piti118/strong-json.git
 In addition to the standard json.dumps/loads, this module offer the following additonal behavior.
 
 - Custom class support outside the box(overridable via ToJsonable interface).
-    - ```
+    - ```python
       class User:
           def __init__(self, first, last):
               self.first = first
@@ -33,7 +33,7 @@ In addition to the standard json.dumps/loads, this module offer the following ad
 - More faithful dictionary dumps/loads
     - Treat dictionary as OrderedDictionary when encode. See [Python 3.6 Release Note](https://docs.python.org/3/whatsnew/3.6.html#new-dict-implementation).
         - ```{'a':'b', 'c':'d'}``` ->
-            ```
+            ```json
             {
                 '__type__':'dict'
                 '__data__':[
@@ -45,17 +45,17 @@ In addition to the standard json.dumps/loads, this module offer the following ad
         - Decoder will accept both traditional form(```{'a':'b','c':'d'}```) and the form above.
     - Allow any hashable object as key
         - ```{User('f', 'l'): 1, User('a','b'):2}``` ->
-            ```
+            ```json
             {
-                '__type__': 'dict'
-                '__data__': [
+                "__type__": "dict",
+                "__data__": [
                     {
-                        'key': {'__type__': 'User', 'first': 'f', 'last':'l'}, 
-                        'value: 1
+                        "key": {"__type__": "User", "first": "f", "last":"l"}, 
+                        "value": 1
                     },
                     {
-                        'key': {'__type__': 'User', 'first': 'a', 'last':'b'}, 
-                        'value: 2
+                        "key": {"__type__": "User", "first": "a", "last":"b"}, 
+                        "value": 2
                     }
                 ]
             }        
@@ -86,14 +86,15 @@ In addition to the standard json.dumps/loads, this module offer the following ad
     }
     ```
 - Support for Enum.
-    - ```
+    - ```python
+      from enum import Enum
       class Color(Enum):
         RED='redd'
         BLUE='blueee'
       strong_json.to_json(Color.RED)
       ``` 
       ->
-      ```
+      ```json
       {'__type__': 'Color' '__data__':'RED'}
       ```
       
