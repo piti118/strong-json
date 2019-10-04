@@ -2,7 +2,7 @@
 ![PyPI](https://img.shields.io/pypi/v/strong_json)
 [![Build Status](https://travis-ci.com/piti118/strong-json.svg?branch=master)](https://travis-ci.org/piti118/strong-json)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/piti118/strong_json_notebook/master)
-
+[![codecov](https://codecov.io/gh/piti118/strong-json/branch/master/graph/badge.svg)](https://codecov.io/gh/piti118/strong-json)
 
 A more faithful python json encoder/decoder.
 

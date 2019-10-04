@@ -1,11 +1,13 @@
 import math
-
-import pytest
-from strong_json import strong_json, ToJsonable, ClassMapBuilder, StrongJson
-from datetime import date
+from datetime import date, datetime
 from enum import Enum, IntEnum
+from typing import Dict
+
 import numpy as np
 import pandas as pd
+import pytest
+from strong_json import strong_json, ToJsonable, ClassMapBuilder, StrongJson, MissingParameterError, JSONPrimitive, \
+    FromJsonable, ClassMapLookUpFailError
 
 
 class User(ToJsonable):
@@ -53,6 +55,15 @@ basic_tests = [
     ((1, 2, 3), {'__type__': 'tuple', '__data__': [1, 2, 3]}),
     (date(2019, 8, 23), {'__type__': 'date', 'year': 2019, 'month': 8, 'day': 23}),
     (np.array([1, 2, 3]), {'__type__': 'numpy.ndarray', '__data__': [1, 2, 3]}),
+    ({1, 2, 3}, {'__type__': 'set', '__data__': [1, 2, 3]}),
+    (datetime(2019, 8, 23, 12, 0, 3), {'__type__': 'datetime',
+                                       'year': 2019,
+                                       'month': 8,
+                                       'day': 23,
+                                       'hour': 12,
+                                       'minute': 0,
+                                       'second': 3,
+                                       'microsecond': 0})
 ]
 
 custom_class_tests = [
@@ -118,7 +129,20 @@ simple_decoder_tests = [
         },
         {'a': 'b', 'c': 'd'}
     ),
-    (None, None)
+    (None, None),
+    (
+        {'__type__': 'set', '__data__': [1, 2, 3]},
+        {1, 2, 3}
+    ),
+    (
+        {'__type__': 'date', 'year': 2019, 'month': 8, 'day': 23},
+        date(2019, 8, 23)
+    ),
+    (
+        {'__type__': 'datetime', 'year': 2019, 'month': 8, 'day': 23, 'hour': 12, 'minute': 34, 'second': 56,
+         'microsecond': 0},
+        datetime(2019, 8, 23, 12, 34, 56, 0)
+    )
 ]
 
 enum_decoder_tests = [
@@ -253,5 +277,92 @@ def test_from_json():
     assert d == {'a': 'b', 'c': 'd'}
 
 
+def test_treat_as_normal_dict():
+    jsoner = StrongJson(class_map={}, treat_dict_as_ordered_dict=False)
+    got = jsoner.to_json_dict({'a': 'b', 'c': 'd'})
+    expected = {'a': 'b', 'c': 'd'}
+    assert got == expected
+
+
 def test_is_subclass():
     assert issubclass(User, ToJsonable)
+
+
+def test_missing_param():
+    class BadUser(ToJsonable):
+        def __init__(self, first: str, last: str):
+            self.first = first
+            self.last = last
+
+    with pytest.raises(MissingParameterError):
+        jsoner = StrongJson({'BadUser': BadUser})
+        jsoner.from_json_dict({'__type__': 'BadUser', 'first': 'hello'})
+
+
+def test_optional_param():
+    class BadUser(ToJsonable):
+        def __init__(self, first: str, last: str = 'default last'):
+            self.first = first
+            self.last = last
+
+        def __eq__(self, other: 'BadUser'):
+            return self.first == other.first and self.last == other.last
+
+    jsoner = StrongJson({'BadUser': BadUser})
+    got = jsoner.from_json_dict({'__type__': 'BadUser', 'first': 'hello'})
+    expected = BadUser('hello')
+    assert got == expected
+
+
+def test_from_jsonable():
+    class BadUser(FromJsonable):
+        def __init__(self, first: str, last: str):
+            self.first = first
+            self.last = last
+
+        @classmethod
+        def from_json_dict(cls, d: Dict[str, JSONPrimitive], decoder: StrongJson):
+            return BadUser(d['firstname'], d['lastname'])
+
+        def __eq__(self, other: 'BadUser'):
+            return self.first == other.first and self.last == other.last
+
+    jsoner = StrongJson({'BadUser': BadUser})
+    got = jsoner.from_json_dict({'__type__': 'BadUser',
+                                 'firstname': 'hello',
+                                 'lastname': 'world'})
+    expected = BadUser('hello', 'world')
+    assert got == expected
+
+
+def test_lookup_fail():
+    with pytest.raises(ClassMapLookUpFailError):
+        got = strong_json.from_json_dict({'__type__': 'BadUser',
+                                          'first': 'hello',
+                                          'last': 'world'})
+
+
+def test_to_jsonable_to_json():
+    got = User('f', 'l').to_json()
+    expected = '{"__type__": "User", "first_name": "f", "last_name": "l"}'
+    assert got == expected
+
+
+def test_from_jsonable_from_json():
+    class BadUser(FromJsonable):
+        def __init__(self, first: str, last: str):
+            self.first = first
+            self.last = last
+
+        @classmethod
+        def from_json_dict(cls, d: Dict[str, JSONPrimitive], decoder: StrongJson):
+            return BadUser(d['first'], d['last'])
+
+        def __eq__(self, other: 'BadUser'):
+            return self.first == other.first and self.last == other.last
+
+    s = '{"__type__": "BadUser", "first": "f", "last": "l"}'
+    jsoner = StrongJson({'BadUser': BadUser})
+    got = BadUser.from_json(s, jsoner)
+    expected = BadUser('f', 'l')
+    assert got == expected

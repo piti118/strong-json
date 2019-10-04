@@ -8,23 +8,39 @@ from datetime import date, datetime
 
 try:
     import pandas as pd
-except ImportError:
-    pd = None
+except ImportError:  # pragma: no cover
+    pd = None  # pragma: no cover
 
 try:
     import numpy as np
-except ImportError:
-    np = None
+except ImportError:  # pragma: no cover
+    np = None  # pragma: no cover
 
 ClassMap = Dict[str, Type[Any]]
-JSONPrimitive = Union[Dict[str, 'JSONPrimitive'], List['JSONPrimitive'], int, float, None, str]
+JSONPrimitive = Union[Dict[str, 'JSONPrimitive'], List['JSONPrimitive'], int, float, None, str, bool]
 
 
-class ClassMapLookUpFailWarning(Warning):
+class StrongJsonWarning(Warning):
     pass
 
 
-class ClassMapLookUpFailError(Exception):
+class ClassMapLookUpFailWarning(StrongJsonWarning):
+    pass
+
+
+class StrongJsonError(Exception):
+    pass
+
+
+class ClassMapLookUpFailError(StrongJsonError):
+    pass
+
+
+class MissingParameterError(StrongJsonError):
+    pass
+
+
+class MissingOptionalDependencyError(StrongJsonError):
     pass
 
 
@@ -148,11 +164,17 @@ class StrongJson:
                     data = d[data_key]
                     return obj_class[data]  # trust me not pycharm
                 else:
-                    param = {a for a in inspect.signature(obj_class).parameters}
-                    bad_keys = [p for p in param if p not in d]
-                    if bad_keys:
-                        warnings.warn('Param not found : %r' % (bad_keys,))
-                    tmp = {k: self.from_json_dict(v) for k, v in d.items() if k != type_key and k in param}
+                    params = inspect.signature(obj_class).parameters
+                    # missing non optional argument
+                    missing_params = [p_name for p_name, param in params.items()
+                                      if p_name not in d and param.default == inspect.Parameter.empty]
+
+                    if missing_params:
+                        raise MissingParameterError(f'Parameter not found : {missing_params}\n' +
+                                                    f'for type {d[type_key]}' +
+                                                    'You may want to implement FromJsonable for this class' +
+                                                    f'We got the following parameters {list(d.keys())}')
+                    tmp = {k: self.from_json_dict(v) for k, v in d.items() if k != type_key and k in params}
                     return obj_class(**tmp)
             elif d[type_key] == 'dict':  # dict with non str key
                 data = d[data_key]
@@ -170,15 +192,13 @@ class StrongJson:
                 return set(data)
             elif d[type_key] == 'pandas.DataFrame':
                 if pd is None:
-                    warnings.warn('Found Pandas DataFrame but pandas is not installed')
-                    return None
+                    raise MissingOptionalDependencyError('Found Pandas DataFrame but pandas is not installed') # pragma: no cover
                 else:
                     data = self.from_json_dict(d[data_key])
                     return pd.DataFrame(data)
             elif d[type_key] == 'numpy.ndarray':
                 if np is None:
-                    warnings.warn('Found Numpy ndarray but numpy is not installed')
-                    return None
+                    raise MissingOptionalDependencyError('Found numpy.ndarray but numpy is not installed') # pragma: no cover
                 else:
                     return np.array(self.from_json_dict(d[data_key]))
             else:
@@ -190,7 +210,7 @@ class StrongJson:
         elif d is None:
             return d
         else:
-            raise NotImplementedError('Unknown type parse %s, %r' % (type(d), d))
+            raise NotImplementedError('Unknown type parse %s, %r' % (type(d), d))  # pragma: no cover
 
     def default_to_json_dict(self, v: Any) -> JSONPrimitive:
         """Default Conversion from object v to json friendly JSONPrimitive
@@ -223,14 +243,7 @@ class StrongJson:
                 type_key: 'tuple',
                 data_key: [self.to_json_dict(vv) for vv in v]
             }
-        elif isinstance(v, date):
-            return {
-                type_key: 'date',
-                'year': v.year,
-                'month': v.month,
-                'day': v.day
-            }
-        elif isinstance(v, datetime):
+        elif isinstance(v, datetime):  # datetime before the date (since datetime is also date)
             return {
                 type_key: 'datetime',
                 'year': v.year,
@@ -241,6 +254,14 @@ class StrongJson:
                 'second': v.second,
                 'microsecond': v.microsecond
             }
+        elif isinstance(v, date):
+            return {
+                type_key: 'date',
+                'year': v.year,
+                'month': v.month,
+                'day': v.day
+            }
+
         elif isinstance(v, set):
             return {
                 type_key: 'set',
@@ -286,7 +307,7 @@ class FromJsonable:
         Returns:
             Object of this class.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @classmethod
     def from_json(cls, s: str, decoder: StrongJson = strong_json, **kwd):
