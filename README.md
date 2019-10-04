@@ -27,7 +27,7 @@ In addition to the standard json.dumps/loads, this module offer the following ad
               self.last = last
       ```
 - Preserve type information.
-    - ```User('f', 'l')``` -> ```{'__type__': 'User', 'first':'f', 'last':'l'}```
+    - ```User('f', 'l')``` -> ```{"__type__": "User", "first":"f", "last":"l"}```
     
     
 - More faithful dictionary dumps/loads
@@ -62,7 +62,7 @@ In addition to the standard json.dumps/loads, this module offer the following ad
             ```
 - Distinguish tuple from List
     - ```[1,2,3]``` -> ```[1,2,3]```
-    - ```(1,2,3)``` -> ```{'__type__':'tuple', '__data__':[1,2,3]}```
+    - ```(1,2,3)``` -> ```{"__type__":"tuple", "__data__":[1,2,3]}```
     
 - Custom class decoder whitelist via class_map
     - ```python
