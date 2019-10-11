@@ -52,6 +52,9 @@ basic_tests = [
         }  # assume treat dict as ordered dict
     ),
     (555, 555),
+    (float('nan'), {'__type__': 'float', '__data__': 'nan'}),
+    (float('inf'), {'__type__': 'float', '__data__': 'inf'}),
+    (float('-inf'), {'__type__': 'float', '__data__': '-inf'}),
     ((1, 2, 3), {'__type__': 'tuple', '__data__': [1, 2, 3]}),
     (date(2019, 8, 23), {'__type__': 'date', 'year': 2019, 'month': 8, 'day': 23}),
     (np.array([1, 2, 3]), {'__type__': 'numpy.ndarray', '__data__': [1, 2, 3]}),
@@ -105,8 +108,18 @@ def test_to_json_dict(test_input, expected):
 
 
 def test_convert_nan():
-    got = strong_json.to_json_dict(float('nan'))
+    got = strong_json.from_json_dict({'__type__': 'float', '__data__': 'nan'})
     assert math.isnan(got)
+
+
+def test_convert_inf():
+    got = strong_json.from_json_dict({'__type__': 'float', '__data__': 'inf'})
+    assert math.isinf(got) and got > 0
+
+
+def test_convert_neg_inf():
+    got = strong_json.from_json_dict({'__type__': 'float', '__data__': '-inf'})
+    assert math.isinf(got) and got < 0
 
 
 simple_decoder_tests = [

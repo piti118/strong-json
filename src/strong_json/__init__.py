@@ -5,6 +5,7 @@ from enum import Enum
 from typing import List, Any, Type, Dict, Union
 import inspect
 from datetime import date, datetime
+import math
 
 try:
     import pandas as pd
@@ -190,15 +191,20 @@ class StrongJson:
             elif d[type_key] == 'set':
                 data = d[data_key]
                 return set(data)
+            elif d[type_key] == 'float':
+                data = d[data_key]
+                return float(data)
             elif d[type_key] == 'pandas.DataFrame':
                 if pd is None:
-                    raise MissingOptionalDependencyError('Found Pandas DataFrame but pandas is not installed') # pragma: no cover
+                    raise MissingOptionalDependencyError(
+                        'Found Pandas DataFrame but pandas is not installed')  # pragma: no cover
                 else:
                     data = self.from_json_dict(d[data_key])
                     return pd.DataFrame(data)
             elif d[type_key] == 'numpy.ndarray':
                 if np is None:
-                    raise MissingOptionalDependencyError('Found numpy.ndarray but numpy is not installed') # pragma: no cover
+                    raise MissingOptionalDependencyError(
+                        'Found numpy.ndarray but numpy is not installed')  # pragma: no cover
                 else:
                     return np.array(self.from_json_dict(d[data_key]))
             else:
@@ -269,6 +275,16 @@ class StrongJson:
             }
         elif isinstance(v, list):
             return [self.to_json_dict(vv) for vv in v]
+        elif isinstance(v, float) and math.isnan(v):
+            return {
+                type_key: "float",
+                data_key: "nan"
+            }
+        elif isinstance(v, float) and math.isinf(v):
+            return {
+                type_key: "float",
+                data_key: "inf" if v > 0 else "-inf"
+            }
         elif isinstance(v, (int, float, str)) or v is None:
             return v
         elif np is not None and isinstance(v, np.ndarray):
