@@ -98,7 +98,7 @@ In addition to the standard json.dumps/loads, this module offer the following ad
       {"__type__": "Color", "__data__":"RED"}
       ```
 - Support for numpy and pandas. (via `to_dict` and `tolist`)
-  
+- `nan, inf, -inf` are dumped as dict ex: `{"__type__":"float", "__data__":"nan"}`
 # Basic Usage
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/piti118/strong_json_notebook/master)
 
