@@ -208,7 +208,7 @@ class StrongJson:
                 else:
                     return np.array(self.from_json_dict(d[data_key]))
             else:
-                raise ClassMapLookUpFailError('Type not found for key %s' % d[type_key])
+                raise ClassMapLookUpFailError('Type not found for key %r %r' % (d[type_key], d))
         elif isinstance(d, list):
             return [self.from_json_dict(item) for item in d]
         elif isinstance(d, (int, str, float)):
