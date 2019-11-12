@@ -51,6 +51,7 @@ basic_tests = [
             '__data__': [{'key': 'a', 'value': 'b'}, {'key': 'c', 'value': 'd'}]
         }  # assume treat dict as ordered dict
     ),
+    ({}, {}),
     (555, 555),
     (float('nan'), {'__type__': 'float', '__data__': 'nan'}),
     (float('inf'), {'__type__': 'float', '__data__': 'inf'}),
@@ -135,6 +136,7 @@ simple_decoder_tests = [
         {'a': 'b', 'c': 'd'},
         {'a': 'b', 'c': 'd'},
     ),
+    ({}, {}),
     (
         {
             '__type__': 'dict',

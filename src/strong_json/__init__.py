@@ -229,8 +229,10 @@ class StrongJson:
         data_key = self.data_key
         if isinstance(v, ToJsonable):
             return v.to_json_dict(encoder=self)
-        elif isinstance(v, (dict, OrderedDict)) and len(v) != 0:
-            if self.treat_dict_as_ordered_dict or \
+        elif isinstance(v, (dict, OrderedDict)):
+            if len(v) == 0:
+                return {}
+            elif self.treat_dict_as_ordered_dict or \
                     isinstance(v, OrderedDict) or \
                     not isinstance(next(iter(v.keys())), str):  # non str key normal dict
                 return {
