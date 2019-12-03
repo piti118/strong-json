@@ -127,6 +127,8 @@ simple_decoder_tests = [
     ('hello', 'hello'),
     (123, 123),
     (123.0, 123.0),
+    (True, True),
+    (False, False),
     ([1, 2, 3], [1, 2, 3]),
     (
         {'__type__': 'tuple', '__data__': [1, 2, 3]},

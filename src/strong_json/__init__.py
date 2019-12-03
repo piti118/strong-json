@@ -287,13 +287,15 @@ class StrongJson:
                 type_key: "float",
                 data_key: "inf" if v > 0 else "-inf"
             }
-        elif isinstance(v, (int, float, str)) or v is None:
+        elif isinstance(v, (int, float, str, bool)) or v is None:
             return v
         elif np is not None and isinstance(v, np.ndarray):
             return {
                 type_key: 'numpy.ndarray',
                 data_key: self.to_json_dict(v.tolist())
             }
+        elif np is not None and isinstance(v, np.bool_):
+            return bool(v)
         elif pd is not None and isinstance(v, pd.DataFrame):
             return {
                 type_key: 'pandas.DataFrame',
